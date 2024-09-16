@@ -7,17 +7,35 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/manifoldco/promptui"
 )
 
 func Create(title string) {
 	now := time.Now().UTC()
 	fileName := createFileNameFromTitle(title, now)
+	fileDate := now.Format("2006-01-02T15-04-05Z")
 	err, envVariables := getOsEnvVariablesForNoteCreation()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Print(envVariables)
-	fmt.Println(fileName)
+	notePath := envVariables.PERSONAL_NOTES_INBOX_DIR + "/" + fileName
+	fmt.Println("Will create a note with the following settings:")
+	fmt.Printf("Title: %s\n", title)
+	fmt.Printf("Date: %s\n", fileDate)
+	fmt.Printf("Path: %s\n", notePath)
+	prompt := promptui.Prompt{
+		Label: "Do you want to continue? [yN]",
+	}
+	promptAnswer, err := prompt.Run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if promptAnswer != "y" {
+		fmt.Printf("Exitting...\n")
+		return
+	}
+	fmt.Printf("Your answer was: %s\n", promptAnswer)
 }
 
 func createFileNameFromTitle(title string, createdAt time.Time) string {
