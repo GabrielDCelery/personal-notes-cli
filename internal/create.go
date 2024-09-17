@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"regexp"
@@ -35,7 +36,17 @@ func Create(title string) {
 		fmt.Printf("Exitting...\n")
 		return
 	}
-	fmt.Printf("Your answer was: %s\n", promptAnswer)
+	template, err := readFileAsString(envVariables.PERSONAL_NOTES_TEMPLATE)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	template = strings.ReplaceAll(template, "{{ title }}", title)
+	template = strings.ReplaceAll(template, "{{ author }}", envVariables.PERSONAL_NOTES_DEFAULT_AUTHOR)
+	template = strings.ReplaceAll(template, "{{ date }}", now.Format("2006-01-02T15-04-05Z"))
+	err = writeStringToFile(notePath, template)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func createFileNameFromTitle(title string, createdAt time.Time) string {
@@ -84,4 +95,30 @@ func isValidDirectory(path string) bool {
 func isValidFile(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func readFileAsString(filePath string) (string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
+}
+
+func writeStringToFile(filePath string, content string) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+	return nil
 }
