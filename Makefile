@@ -2,4 +2,4 @@ install:
 	@go mod tidy
 
 build: install
-	@go build -o ./bin/pnote
+	@go build -o ./bin/pnotes
