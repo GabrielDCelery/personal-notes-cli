@@ -12,7 +12,7 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-func Create(title string) {
+func CreateNote(title string) {
 	now := time.Now().UTC()
 	fileName := createFileNameFromTitle(title, now)
 	fileDate := now.Format("2006-01-02T15-04-05Z")
@@ -47,6 +47,7 @@ func Create(title string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	fmt.Printf("Finished creating note: %s\n", notePath)
 }
 
 func createFileNameFromTitle(title string, createdAt time.Time) string {
