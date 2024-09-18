@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -48,6 +49,14 @@ func CreateNote(title string) {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Finished creating note: %s\n", notePath)
+	openNoteInEditorCommand := exec.Command(envVariables.EDITOR, notePath)
+	openNoteInEditorCommand.Stdin = os.Stdin
+	openNoteInEditorCommand.Stdout = os.Stdout
+	openNoteInEditorCommand.Stderr = os.Stderr
+	err = openNoteInEditorCommand.Run()
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func createFileNameFromTitle(title string, createdAt time.Time) string {
@@ -60,12 +69,17 @@ func createFileNameFromTitle(title string, createdAt time.Time) string {
 }
 
 type OsEnvVariablesForNoteCreation struct {
+	EDITOR                        string
 	PERSONAL_NOTES_DEFAULT_AUTHOR string
 	PERSONAL_NOTES_INBOX_DIR      string
 	PERSONAL_NOTES_TEMPLATE       string
 }
 
 func getOsEnvVariablesForNoteCreation() (error, *OsEnvVariablesForNoteCreation) {
+	EDITOR := os.Getenv("EDITOR")
+	if len(EDITOR) == 0 {
+		return fmt.Errorf("EDITOR is not specified"), &OsEnvVariablesForNoteCreation{}
+	}
 	PERSONAL_NOTES_DEFAULT_AUTHOR := os.Getenv("PERSONAL_NOTES_DEFAULT_AUTHOR")
 	if len(PERSONAL_NOTES_DEFAULT_AUTHOR) == 0 {
 		return fmt.Errorf("PERSONAL_NOTES_DEFAULT_AUTHOR has not been specified"), &OsEnvVariablesForNoteCreation{}
@@ -79,6 +93,7 @@ func getOsEnvVariablesForNoteCreation() (error, *OsEnvVariablesForNoteCreation) 
 		return fmt.Errorf("PERSONAL_NOTES_TEMPLATE is not a valid file"), &OsEnvVariablesForNoteCreation{}
 	}
 	return nil, &OsEnvVariablesForNoteCreation{
+		EDITOR,
 		PERSONAL_NOTES_DEFAULT_AUTHOR,
 		PERSONAL_NOTES_INBOX_DIR,
 		PERSONAL_NOTES_TEMPLATE,
