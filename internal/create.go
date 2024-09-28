@@ -10,18 +10,32 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/manifoldco/promptui"
+	"github.com/spf13/viper"
 )
 
+type CreteNoteConfig struct {
+	Editor   string `mapstructure:"editor" validate:"required"`
+	Author   string `mapstructure:"personal_notes_default_author" validate:"required"`
+	InboxDir string `mapstructure:"personal_notes_inbox_dir" validate:"required"`
+	Template string `mapstructure:"personal_notes_template" validate:"required"`
+}
+
 func CreateNote(title string) {
-	now := time.Now().UTC()
-	fileName := createFileNameFromTitle(title, now)
-	fileDate := now.Format("2006-01-02T15-04-05Z")
-	err, envVariables := getOsEnvVariablesForNoteCreation()
+	var createNoteConfig CreteNoteConfig
+	err := viper.Unmarshal(&createNoteConfig)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	notePath := envVariables.PERSONAL_NOTES_INBOX_DIR + "/" + fileName
+	err = validator.New().Struct(createNoteConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	now := time.Now().UTC()
+	fileName := createFileNameFromTitle(title, now)
+	fileDate := now.Format("2006-01-02T15-04-05Z")
+	notePath := createNoteConfig.InboxDir + "/" + fileName
 	fmt.Println("Will create a note with the following settings:")
 	fmt.Printf("Title: %s\n", title)
 	fmt.Printf("Date: %s\n", fileDate)
@@ -37,19 +51,19 @@ func CreateNote(title string) {
 		fmt.Printf("Exitting...\n")
 		return
 	}
-	template, err := readFileAsString(envVariables.PERSONAL_NOTES_TEMPLATE)
+	template, err := readFileAsString(createNoteConfig.Template)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	template = strings.ReplaceAll(template, "{{ title }}", title)
-	template = strings.ReplaceAll(template, "{{ author }}", envVariables.PERSONAL_NOTES_DEFAULT_AUTHOR)
+	template = strings.ReplaceAll(template, "{{ author }}", createNoteConfig.Author)
 	template = strings.ReplaceAll(template, "{{ date }}", now.Format("2006-01-02T15-04-05Z"))
 	err = writeStringToFile(notePath, template)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Finished creating note: %s\n", notePath)
-	openNoteInEditorCommand := exec.Command(envVariables.EDITOR, notePath)
+	openNoteInEditorCommand := exec.Command(createNoteConfig.Editor, notePath)
 	openNoteInEditorCommand.Stdin = os.Stdin
 	openNoteInEditorCommand.Stdout = os.Stdout
 	openNoteInEditorCommand.Stderr = os.Stderr
@@ -66,38 +80,6 @@ func createFileNameFromTitle(title string, createdAt time.Time) string {
 	title = regexp.MustCompile(`[^a-z0-9-]`).ReplaceAllString(title, "")
 	formattedDate := createdAt.Format("20060102150405")
 	return title + "-" + formattedDate + ".md"
-}
-
-type OsEnvVariablesForNoteCreation struct {
-	EDITOR                        string
-	PERSONAL_NOTES_DEFAULT_AUTHOR string
-	PERSONAL_NOTES_INBOX_DIR      string
-	PERSONAL_NOTES_TEMPLATE       string
-}
-
-func getOsEnvVariablesForNoteCreation() (error, *OsEnvVariablesForNoteCreation) {
-	EDITOR := os.Getenv("EDITOR")
-	if len(EDITOR) == 0 {
-		return fmt.Errorf("EDITOR is not specified"), &OsEnvVariablesForNoteCreation{}
-	}
-	PERSONAL_NOTES_DEFAULT_AUTHOR := os.Getenv("PERSONAL_NOTES_DEFAULT_AUTHOR")
-	if len(PERSONAL_NOTES_DEFAULT_AUTHOR) == 0 {
-		return fmt.Errorf("PERSONAL_NOTES_DEFAULT_AUTHOR has not been specified"), &OsEnvVariablesForNoteCreation{}
-	}
-	PERSONAL_NOTES_INBOX_DIR := os.Getenv("PERSONAL_NOTES_INBOX_DIR")
-	if !isValidDirectory(PERSONAL_NOTES_INBOX_DIR) {
-		return fmt.Errorf("PERSONAL_NOTES_INBOX_DIR is not a valid directory"), &OsEnvVariablesForNoteCreation{}
-	}
-	PERSONAL_NOTES_TEMPLATE := os.Getenv("PERSONAL_NOTES_TEMPLATE")
-	if !isValidFile(PERSONAL_NOTES_TEMPLATE) {
-		return fmt.Errorf("PERSONAL_NOTES_TEMPLATE is not a valid file"), &OsEnvVariablesForNoteCreation{}
-	}
-	return nil, &OsEnvVariablesForNoteCreation{
-		EDITOR,
-		PERSONAL_NOTES_DEFAULT_AUTHOR,
-		PERSONAL_NOTES_INBOX_DIR,
-		PERSONAL_NOTES_TEMPLATE,
-	}
 }
 
 func isValidDirectory(path string) bool {
