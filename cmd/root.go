@@ -64,10 +64,10 @@ func initConfig() {
 		viper.SetConfigName(".m")
 	}
 
-	viper.BindEnv("EDITOR")
-	viper.BindEnv("PERSONAL_NOTES_DEFAULT_AUTHOR")
-	viper.BindEnv("PERSONAL_NOTES_INBOX_DIR")
-	viper.BindEnv("PERSONAL_NOTES_TEMPLATE")
+	viper.BindEnv("editor", "EDITOR")
+	viper.BindEnv("author", "PERSONAL_NOTES_DEFAULT_AUTHOR")
+	viper.BindEnv("inboxDir", "PERSONAL_NOTES_INBOX_DIR")
+	viper.BindEnv("templatePath", "PERSONAL_NOTES_TEMPLATE")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.

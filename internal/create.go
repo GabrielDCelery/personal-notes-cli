@@ -16,10 +16,10 @@ import (
 )
 
 type CreteNoteConfig struct {
-	Editor   string `mapstructure:"editor" validate:"required"`
-	Author   string `mapstructure:"personal_notes_default_author" validate:"required"`
-	InboxDir string `mapstructure:"personal_notes_inbox_dir" validate:"required"`
-	Template string `mapstructure:"personal_notes_template" validate:"required"`
+	Editor       string `mapstructure:"editor" validate:"required"`
+	Author       string `mapstructure:"author" validate:"required"`
+	InboxDir     string `mapstructure:"inboxDir" validate:"required"`
+	TemplatePath string `mapstructure:"templatePath" validate:"required"`
 }
 
 func CreateNote(title string) {
@@ -51,7 +51,7 @@ func CreateNote(title string) {
 		fmt.Printf("Exitting...\n")
 		return
 	}
-	template, err := readFileAsString(createNoteConfig.Template)
+	template, err := readFileAsString(createNoteConfig.TemplatePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
