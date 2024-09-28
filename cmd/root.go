@@ -38,6 +38,8 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	// Add subcommand palette
+	rootCmd.AddCommand(createCmd)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m.yaml)")
 

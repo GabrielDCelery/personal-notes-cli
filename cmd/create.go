@@ -25,7 +25,6 @@ pnote create "Hello World"`,
 }
 
 func init() {
-	rootCmd.AddCommand(createCmd)
 
 	// Here you will define your flags and configuration settings.
 
