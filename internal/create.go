@@ -24,12 +24,10 @@ type CreteNoteConfig struct {
 
 func CreateNote(title string) {
 	var createNoteConfig CreteNoteConfig
-	err := viper.Unmarshal(&createNoteConfig)
-	if err != nil {
+	if err := viper.Unmarshal(&createNoteConfig); err != nil {
 		log.Fatalln(err)
 	}
-	err = validator.New().Struct(createNoteConfig)
-	if err != nil {
+	if err := validator.New().Struct(createNoteConfig); err != nil {
 		log.Fatalln(err)
 	}
 	now := time.Now().UTC()
@@ -63,12 +61,8 @@ func CreateNote(title string) {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Finished creating note: %s\n", notePath)
-	openNoteInEditorCommand := exec.Command(createNoteConfig.Editor, notePath)
-	openNoteInEditorCommand.Stdin = os.Stdin
-	openNoteInEditorCommand.Stdout = os.Stdout
-	openNoteInEditorCommand.Stderr = os.Stderr
-	err = openNoteInEditorCommand.Run()
-	if err != nil {
+
+	if err := openNoteInEditor(notePath, createNoteConfig.Editor); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -106,4 +100,12 @@ func writeStringToFile(filePath string, content string) error {
 		return err
 	}
 	return nil
+}
+
+func openNoteInEditor(notePath string, editor string) error {
+	cmd := exec.Command(editor, notePath)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
