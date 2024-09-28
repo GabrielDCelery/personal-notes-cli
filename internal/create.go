@@ -82,19 +82,6 @@ func createFileNameFromTitle(title string, createdAt time.Time) string {
 	return title + "-" + formattedDate + ".md"
 }
 
-func isValidDirectory(path string) bool {
-	dirInfo, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return dirInfo.IsDir()
-}
-
-func isValidFile(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 func readFileAsString(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
