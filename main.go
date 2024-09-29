@@ -1,10 +1,9 @@
 /*
 Copyright © 2024 GaZe
-
 */
 package main
 
-import "example.com/m/cmd"
+import "github.com/GabrielDCelery/personal-notes-cli/cmd"
 
 func main() {
 	cmd.Execute()

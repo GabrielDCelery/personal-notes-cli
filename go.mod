@@ -1,4 +1,4 @@
-module example.com/m
+module github.com/GabrielDCelery/personal-notes-cli
 
 go 1.22.6
 

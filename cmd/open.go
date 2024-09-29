@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"example.com/m/internal/commands"
+	"github.com/GabrielDCelery/personal-notes-cli/internal/commands"
 	"github.com/spf13/cobra"
 )
 

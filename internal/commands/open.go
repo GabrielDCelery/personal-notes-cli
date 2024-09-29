@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"example.com/m/internal/editor"
+	"github.com/GabrielDCelery/personal-notes-cli/internal/editor"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
