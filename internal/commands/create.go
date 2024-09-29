@@ -1,15 +1,14 @@
-package internal
+package commands
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
 
+	"example.com/m/internal/editor"
 	"github.com/go-playground/validator/v10"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/viper"
@@ -49,20 +48,19 @@ func CreateNote(title string) {
 		fmt.Printf("Exitting...\n")
 		return
 	}
-	template, err := readFileAsString(createNoteConfig.TemplatePath)
+	templateAsBytes, err := os.ReadFile(createNoteConfig.TemplatePath)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	template := string(templateAsBytes)
 	template = strings.ReplaceAll(template, "{{ title }}", title)
 	template = strings.ReplaceAll(template, "{{ author }}", createNoteConfig.Author)
 	template = strings.ReplaceAll(template, "{{ date }}", now.Format("2006-01-02T15-04-05Z"))
-	err = writeStringToFile(notePath, template)
-	if err != nil {
+	if err := os.WriteFile(notePath, []byte(template), 0644); err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Finished creating note: %s\n", notePath)
-
-	if err := openNoteInEditor(notePath, createNoteConfig.Editor); err != nil {
+	if err := editor.OpenPathInEditor(notePath, createNoteConfig.Editor); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -74,38 +72,4 @@ func createFileNameFromTitle(title string, createdAt time.Time) string {
 	title = regexp.MustCompile(`[^a-z0-9-]`).ReplaceAllString(title, "")
 	formattedDate := createdAt.Format("20060102150405")
 	return title + "-" + formattedDate + ".md"
-}
-
-func readFileAsString(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	content, err := io.ReadAll(file)
-	if err != nil {
-		return "", err
-	}
-	return string(content), nil
-}
-
-func writeStringToFile(filePath string, content string) error {
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	_, err = file.WriteString(content)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func openNoteInEditor(notePath string, editor string) error {
-	cmd := exec.Command(editor, notePath)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }

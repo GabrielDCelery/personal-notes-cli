@@ -40,6 +40,7 @@ func init() {
 	// will be global for your application.
 	// Add subcommand palette
 	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(openCmd)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.m.yaml)")
 
@@ -66,6 +67,7 @@ func initConfig() {
 
 	viper.BindEnv("editor", "EDITOR")
 	viper.BindEnv("author", "PERSONAL_NOTES_DEFAULT_AUTHOR")
+	viper.BindEnv("notesDir", "PERSONAL_NOTES_DIR")
 	viper.BindEnv("inboxDir", "PERSONAL_NOTES_INBOX_DIR")
 	viper.BindEnv("templatePath", "PERSONAL_NOTES_TEMPLATE")
 	viper.AutomaticEnv() // read in environment variables that match
